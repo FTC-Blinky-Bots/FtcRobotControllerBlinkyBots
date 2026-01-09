@@ -112,7 +112,7 @@ public class RobotAutoDriveByTime_Red extends LinearOpMode {
     final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
     final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
 
-    final double APRIL_DISTANCE_THRESHOLD = 0.5;    // Current distance from april tag is under this threshold distance from desired distance.
+    final double APRIL_BEARING_THRESHOLD = 1;    // Current bearing from april tag is under this threshold distance from desired distance.
 
     final int LEFT_TICK_THRESHOLD = 100; //TODO: tune amount
 
@@ -382,10 +382,10 @@ public class RobotAutoDriveByTime_Red extends LinearOpMode {
         driveByTime(-0.25, 0.5, 0, 2,0);
         */
         //Step: Wait for other team shooting
-        sleep(15000);
+        sleep(12000);
 
         //Find April Tag
-        driveToAprilTag(27,40);
+        rotateToAprilTag();
 
         //Step: Launch wheels rolling
         leftLaunchDrive.setPower(LAUNCH_SPEED);
@@ -673,7 +673,7 @@ public class RobotAutoDriveByTime_Red extends LinearOpMode {
         telemetry.addData("Threshold :",  "%5.1f", HEADING_THRESHOLD);
         telemetry.update();
     }
-    public void driveToAprilTag(double desiredDistance, double desiredHeading) {
+    public void rotateToAprilTag() {
 
         boolean targetFound     = false;    // Set to true when an AprilTag target is detected
         double  drive           = 0;        // Desired forward power/speed (-1 to +1)
@@ -717,18 +717,13 @@ public class RobotAutoDriveByTime_Red extends LinearOpMode {
             // TODO: Wrap this in a while loop.  Keep looping while
             // absolute value of (distance from april tag - desiredDistance) is more than 0.5 inch.
             while (opModeIsActive() && targetFound &&
-                    (Math.abs(desiredTag.ftcPose.range - desiredDistance) > APRIL_DISTANCE_THRESHOLD) &&
-                    (Math.abs(desiredTag.ftcPose.bearing - desiredHeading) > APRIL_DISTANCE_THRESHOLD) ) {
+                    (Math.abs(desiredTag.ftcPose.bearing) > APRIL_BEARING_THRESHOLD)) {
 
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
-                double rangeError = (desiredTag.ftcPose.range - desiredDistance);
-                double headingError = desiredTag.ftcPose.bearing - desiredHeading;
-                double yawError = desiredTag.ftcPose.yaw;
+                double headingError = desiredTag.ftcPose.bearing;
 
                 // Use the speed and turn "gains" to calculate how we want the robot to move.
-                drive = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
                 turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
-                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
                 telemetry.addData("Range",  "%5.1f inches", desiredTag.ftcPose.range);
                 telemetry.addData("Bearing","%3.0f degrees", desiredTag.ftcPose.bearing);
@@ -774,7 +769,7 @@ public class RobotAutoDriveByTime_Red extends LinearOpMode {
             telemetry.addData("\n>","NO TARGET FOUND\n");
             telemetry.update();
 
-            sleep(2000);
+            sleep(1000);
         }
     }
 
