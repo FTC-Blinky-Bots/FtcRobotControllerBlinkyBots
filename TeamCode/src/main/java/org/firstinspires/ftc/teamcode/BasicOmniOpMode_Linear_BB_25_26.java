@@ -36,6 +36,7 @@ import static org.firstinspires.ftc.teamcode.RobotAutoDriveByTime_Goal.LAUNCH_SP
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -89,16 +90,20 @@ public class BasicOmniOpMode_Linear_BB_25_26 extends LinearOpMode {
     private DcMotor rightFrontDrive = null;
     private DcMotor rightBackDrive = null;
 
+    private double axial;
+    private double lateral;
+    private double yaw;
+
     //telescoping arm not in use
     //private DcMotor armDrive = null;
 
     // Declare OpMode members for the launch motors
-    private DcMotor rightLaunchDrive = null;
-    private DcMotor leftLaunchDrive = null;
+    private DcMotorEx rightLaunchDrive = null;
+    private DcMotorEx leftLaunchDrive = null;
 
     // Set constant power level for the launch motors
-    static final double LAUNCH_POWER_LESS = 0.6; //TODO: Tune value (between 0 and 1)
-    static final double LAUNCH_POWER_MORE = 0.65;
+    static final double LAUNCH_POWER_LESS = 0.5; //TODO: Tune value (between 0 and 1)
+    static final double LAUNCH_POWER_MORE = 0.57;
     // Set up a variable for each launch wheel to set power level
     private double launchPower = 0;
 
@@ -168,8 +173,13 @@ public class BasicOmniOpMode_Linear_BB_25_26 extends LinearOpMode {
         //armDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         //Add config for new motors (launch wheels)
-        rightLaunchDrive = hardwareMap.get(DcMotor.class, "right_launch_drive"); // Port 0
-        leftLaunchDrive = hardwareMap.get(DcMotor.class, "left_launch_drive");
+        leftLaunchDrive = hardwareMap.get(DcMotorEx.class, "left_launch_drive");
+        //leftLaunchDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //leftLaunchDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightLaunchDrive = hardwareMap.get(DcMotorEx.class, "right_launch_drive"); // Port 0
+        //rightLaunchDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //rightLaunchDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
 
         // Connect to servo (Assume Robot Left Hand)
         // Change the text in quotes to match any servo name on your robot.
@@ -229,16 +239,9 @@ public class BasicOmniOpMode_Linear_BB_25_26 extends LinearOpMode {
             //double max2;
 
             // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-            double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
-            double lateral = gamepad1.left_stick_x;
-            double yaw = gamepad1.right_stick_x;
-
-            // Combine the joystick requests for each axis-motion to determine each wheel's power.
-            // Set up a variable for each drive wheel to save the power level for telemetry.
-            double leftFrontPower = axial + lateral + yaw;
-            double rightFrontPower = axial - lateral - yaw;
-            double leftBackPower = axial - lateral + yaw;
-            double rightBackPower = axial + lateral - yaw;
+            axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
+            lateral = gamepad1.left_stick_x;
+            yaw = gamepad1.right_stick_x;
 
             //gamepad2 - control the arms - right joystick up to extend, down to retract
             //double axial2 = -gamepad2.right_stick_y;  // Note: pushing stick forward gives negative value
@@ -374,6 +377,13 @@ public class BasicOmniOpMode_Linear_BB_25_26 extends LinearOpMode {
                 }
                 */
 
+            // Combine the joystick requests for each axis-motion to determine each wheel's power.
+            // Set up a variable for each drive wheel to save the power level for telemetry.
+            double leftFrontPower = axial + lateral + yaw;
+            double rightFrontPower = axial - lateral - yaw;
+            double leftBackPower = axial - lateral + yaw;
+            double rightBackPower = axial + lateral - yaw;
+
 
             // Normalize the values so no wheel power exceeds 100%
             // This ensures that the robot maintains the desired motion.
@@ -428,6 +438,10 @@ public class BasicOmniOpMode_Linear_BB_25_26 extends LinearOpMode {
             leftLaunchDrive.setPower(launchPower);
             rightLaunchDrive.setPower(launchPower);
 
+            // Set rpm for launchers
+            //leftLaunchDrive.setVelocity(launchPower * 2260);
+            //rightLaunchDrive.setVelocity(launchPower * 2260);
+
             //encoderDrive(0.5, targetTicks, 2);
 
             // Set the servo to the new position and pause;
@@ -456,6 +470,8 @@ public class BasicOmniOpMode_Linear_BB_25_26 extends LinearOpMode {
             telemetry.addData("Launcher Left/Right", "%4.2f", launchPower);
             telemetry.addData("gatePosition", "%4.2f", gatePosition);
             telemetry.addData("Trim amount", "Trim amount", launchTrim);
+            telemetry.addData("Velo  left/Right", "%4.2f, %4.2f", leftLaunchDrive.getVelocity(), rightLaunchDrive.getVelocity());
+
             //telemetry.addData("Arm", "%5.2f", armPower);
             // telemetry.update();
 
