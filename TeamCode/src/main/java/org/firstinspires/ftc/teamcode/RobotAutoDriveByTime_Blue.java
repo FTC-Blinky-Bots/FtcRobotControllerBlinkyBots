@@ -31,10 +31,8 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -42,8 +40,6 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -51,7 +47,6 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /*
  * This OpMode illustrates the concept of driving a path based on time.
@@ -67,8 +62,8 @@ import java.util.concurrent.TimeUnit;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Goal Shooting", group="Robot")
-public class RobotAutoDriveByTime_Goal extends LinearOpMode {
+@Autonomous(name="Goal Shooting Blue", group="Robot")
+public class RobotAutoDriveByTime_Blue extends LinearOpMode {
 
     /* Declare OpMode members. */
     private DcMotor leftFrontDrive = null;
@@ -78,10 +73,6 @@ public class RobotAutoDriveByTime_Goal extends LinearOpMode {
 
     //telescoping arm
     //private DcMotor armDrive = null;
-
-    // Launchers
-    private DcMotor leftLaunchDrive = null;
-    private DcMotor rightLaunchDrive = null;
 
     /*
     servo claw
@@ -113,18 +104,18 @@ public class RobotAutoDriveByTime_Goal extends LinearOpMode {
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
     final double SPEED_GAIN  =  0.3  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0) = 0.02
     final double STRAFE_GAIN =  0.02 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
-    final double TURN_GAIN   =  0.02  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+    final double TURN_GAIN   =  0.1  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
     final double MAX_AUTO_SPEED = 0.3;   //  Clip the approach speed to this max value (adjust for your robot)
     final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
     final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
 
-    final double APRIL_DISTANCE_THRESHOLD = 0.5;    // Current distance from april tag is under this threshold distance from desired distance.
+    final double APRIL_BEARING_THRESHOLD = 1;    // Current bearing from april tag is under this threshold distance from desired distance.
 
     final int LEFT_TICK_THRESHOLD = 100; //TODO: tune amount
 
     private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
-    private static final int DESIRED_TAG_ID = -1;     // Choose the tag you want to approach or set to -1 for ANY tag.
+    private static final int DESIRED_TAG_ID = 20;     // Choose the tag you want to approach or set to -1 for ANY tag.
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
@@ -191,8 +182,9 @@ public class RobotAutoDriveByTime_Goal extends LinearOpMode {
         leftFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        rightLaunchDrive = hardwareMap.get(DcMotor.class, "right_launch_drive"); // Port 0
-        leftLaunchDrive = hardwareMap.get(DcMotor.class, "left_launch_drive");
+        DcMotor rightLaunchDrive = hardwareMap.get(DcMotor.class, "right_launch_drive"); // Port 0
+        // Launchers
+        DcMotor leftLaunchDrive = hardwareMap.get(DcMotor.class, "left_launch_drive");
 
         // Set up launch motors
         rightLaunchDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -387,11 +379,11 @@ public class RobotAutoDriveByTime_Goal extends LinearOpMode {
         // Step: Strafe back and to the right to observation zone
         driveByTime(-0.25, 0.5, 0, 2,0);
         */
+        //Step: Wait for other team shooting
+        sleep(10000);
 
-        // Step: Back up
-        driveByTime(-0.6, 0,0,1,0);
-        telemetry.addData("Step", "1");
-        telemetry.update();
+        //Find April Tag
+        rotateToAprilTag();
 
         //Step: Launch wheels rolling
         leftLaunchDrive.setPower(LAUNCH_SPEED);
@@ -418,7 +410,7 @@ public class RobotAutoDriveByTime_Goal extends LinearOpMode {
         telemetry.update();
 
         //Step: Pause
-        sleep(500);
+        sleep(750);
 
         //Step: Servo push ball 2
         gateServo.setPosition(GATE_UP);
@@ -434,7 +426,7 @@ public class RobotAutoDriveByTime_Goal extends LinearOpMode {
         telemetry.update();
 
         //Step: Pause
-        sleep(500);
+        sleep(750);
 
         //Step: Servo push ball 3
         gateServo.setPosition(GATE_UP);
@@ -450,7 +442,10 @@ public class RobotAutoDriveByTime_Goal extends LinearOpMode {
         telemetry.update();
 
         //Step: back up
-        driveByTime(-0.6, 0,0,1,0);
+        driveByTime(-0.3, 0,0,1,0);
+
+        //Step: drive forward
+        driveByTime(0.6,0,0,1,0);
 
         // Step: Park and wait for TeleOp
         // TODO
@@ -460,13 +455,13 @@ public class RobotAutoDriveByTime_Goal extends LinearOpMode {
         sleep(1000); //TODO: Change value w/ testing
     }
 
-/*
- *  Method to perform a move to an exact position, based on encoder counts.
- *  Move will stop if any of three conditions occur:
- *  1) Move gets to the desired position
- *  2) Move runs out of time
- *  3) Driver stops the OpMode running.
- */
+    /*
+     *  Method to perform a move to an exact position, based on encoder counts.
+     *  Move will stop if any of three conditions occur:
+     *  1) Move gets to the desired position
+     *  2) Move runs out of time
+     *  3) Driver stops the OpMode running.
+     */
     /*
     public void encoderArm(double speed,
                              int targetTicks,
@@ -676,7 +671,7 @@ public class RobotAutoDriveByTime_Goal extends LinearOpMode {
         telemetry.addData("Threshold :",  "%5.1f", HEADING_THRESHOLD);
         telemetry.update();
     }
-    public void driveToAprilTag(double desiredDistance) {
+    public void rotateToAprilTag() {
 
         boolean targetFound     = false;    // Set to true when an AprilTag target is detected
         double  drive           = 0;        // Desired forward power/speed (-1 to +1)
@@ -720,17 +715,13 @@ public class RobotAutoDriveByTime_Goal extends LinearOpMode {
             // TODO: Wrap this in a while loop.  Keep looping while
             // absolute value of (distance from april tag - desiredDistance) is more than 0.5 inch.
             while (opModeIsActive() && targetFound &&
-                    (Math.abs(desiredTag.ftcPose.range - desiredDistance) > APRIL_DISTANCE_THRESHOLD) ) {
+                    (Math.abs(desiredTag.ftcPose.bearing) > APRIL_BEARING_THRESHOLD)) {
 
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
-                double rangeError = (desiredTag.ftcPose.range - desiredDistance);
                 double headingError = desiredTag.ftcPose.bearing;
-                double yawError = desiredTag.ftcPose.yaw;
 
                 // Use the speed and turn "gains" to calculate how we want the robot to move.
-                drive = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
                 turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
-                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
 
                 telemetry.addData("Range",  "%5.1f inches", desiredTag.ftcPose.range);
                 telemetry.addData("Bearing","%3.0f degrees", desiredTag.ftcPose.bearing);
@@ -776,7 +767,7 @@ public class RobotAutoDriveByTime_Goal extends LinearOpMode {
             telemetry.addData("\n>","NO TARGET FOUND\n");
             telemetry.update();
 
-            sleep(2000);
+            sleep(1000);
         }
     }
 

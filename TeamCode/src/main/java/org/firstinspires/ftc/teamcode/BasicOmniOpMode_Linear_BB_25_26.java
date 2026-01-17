@@ -33,6 +33,7 @@ import org.firstinspires.ftc.teamcode.BlinkyBotsLinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -87,12 +88,12 @@ public class BasicOmniOpMode_Linear_BB_25_26 extends BlinkyBotsLinearOpMode {
     private DcMotor rightBackDrive = null;
 
     // Declare OpMode members for the launch motors
-    private DcMotor rightLaunchDrive = null;
-    private DcMotor leftLaunchDrive = null;
+    private DcMotorEx rightLaunchDrive = null;
+    private DcMotorEx leftLaunchDrive = null;
 
     // Set constant power level for the launch motors
-    static final double LAUNCH_POWER_LESS = 0.6; //TODO: Tune value (between 0 and 1)
-    static final double LAUNCH_POWER_MORE = 0.65;
+    static final double LAUNCH_POWER_LESS = 0.5; //TODO: Tune value (between 0 and 1)
+    static final double LAUNCH_POWER_MORE = 0.57;
     // Set up a variable for each launch wheel to set power level
     private double launchPower = 0;
 
