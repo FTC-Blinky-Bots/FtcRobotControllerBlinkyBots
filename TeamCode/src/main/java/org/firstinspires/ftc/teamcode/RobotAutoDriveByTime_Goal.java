@@ -153,11 +153,11 @@ public class RobotAutoDriveByTime_Goal extends LinearOpMode {
     static final double     P_DRIVE_GAIN           = 0.03;     // Larger is more responsive, but also less stable.
 
     //Constants for the gate
-    static final double GATE_UP = 0.6;
+    static final double GATE_UP = 0.3;
     static final double GATE_DOWN = 0;
 
     // Set constants for launch speed
-    static final double LAUNCH_SPEED = 0.5; // TODO: test value
+    static final double LAUNCH_SPEED = 0.55; // TODO: test value
 
     // * Setup for Drive by Time
     private final ElapsedTime     runtime = new ElapsedTime();

@@ -106,7 +106,7 @@ public class RobotAutoDriveByTime_Red extends LinearOpMode {
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
     final double SPEED_GAIN  =  0.3  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0) = 0.02
     final double STRAFE_GAIN =  0.02 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
-    final double TURN_GAIN   =  0.02  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+    final double TURN_GAIN   =  0.1  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
     final double MAX_AUTO_SPEED = 0.3;   //  Clip the approach speed to this max value (adjust for your robot)
     final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
@@ -146,11 +146,11 @@ public class RobotAutoDriveByTime_Red extends LinearOpMode {
     static final double     P_DRIVE_GAIN           = 0.03;     // Larger is more responsive, but also less stable.
 
     //Constants for the gate
-    static final double GATE_UP = 0.6;
+    static final double GATE_UP = 0.3;
     static final double GATE_DOWN = 0;
 
     // Set constants for launch speed
-    static final double LAUNCH_SPEED = 0.56; // TODO: test value
+    static final double LAUNCH_SPEED = 0.55; // TODO: test value
 
     // * Setup for Drive by Time
     private final ElapsedTime     runtime = new ElapsedTime();
@@ -382,7 +382,7 @@ public class RobotAutoDriveByTime_Red extends LinearOpMode {
         driveByTime(-0.25, 0.5, 0, 2,0);
         */
         //Step: Wait for other team shooting
-        sleep(12000);
+        sleep(10000);
 
         //Find April Tag
         rotateToAprilTag();
@@ -717,7 +717,8 @@ public class RobotAutoDriveByTime_Red extends LinearOpMode {
             // TODO: Wrap this in a while loop.  Keep looping while
             // absolute value of (distance from april tag - desiredDistance) is more than 0.5 inch.
             while (opModeIsActive() && targetFound &&
-                    (Math.abs(desiredTag.ftcPose.bearing) > APRIL_BEARING_THRESHOLD)) {
+                    (Math.abs(desiredTag.ftcPose.bearing) > APRIL_BEARING_THRESHOLD) &&
+                     runtime.seconds() < 3) {
 
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
                 double headingError = desiredTag.ftcPose.bearing;
