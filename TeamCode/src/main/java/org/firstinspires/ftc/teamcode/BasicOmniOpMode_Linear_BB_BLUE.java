@@ -28,16 +28,9 @@
  */
 
 package org.firstinspires.ftc.teamcode;
-import org.firstinspires.ftc.teamcode.BlinkyBotsLinearOpMode;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /*
  * TODO: gyro driving for hard turn 180
@@ -76,42 +69,19 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * Roadrunner odometry pods (3?)
  */
 
-@TeleOp(name="Basic: Omni Linear OpMode (normal servo) 25-26", group="Linear OpMode")
+@TeleOp(name="BLUE TeleOp 25-26", group="Linear OpMode")
 //@Disabled
-public class BasicOmniOpMode_Linear_BB_25_26 extends BlinkyBotsLinearOpMode {
-
+public class BasicOmniOpMode_Linear_BB_BLUE extends BlinkyBotsLinearOpMode {
     // Declare OpMode members for each of the 4 motors.
     private final ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftFrontDrive = null;
-    private DcMotor leftBackDrive = null;
-    private DcMotor rightFrontDrive = null;
-    private DcMotor rightBackDrive = null;
-
-    // Declare OpMode members for the launch motors
-    private DcMotorEx rightLaunchDrive = null;
-    private DcMotorEx leftLaunchDrive = null;
-
-    // Set constant power level for the launch motors
-    static final double LAUNCH_POWER_LESS = 0.5; //TODO: Tune value (between 0 and 1)
-    static final double LAUNCH_POWER_MORE = 0.57;
-    // Set up a variable for each launch wheel to set power level
-    private double launchPower = 0;
-
-    private double launchTrim = 0; // TODO: This is buggy - always runs
-
-    private final ElapsedTime automatedShootTimer = new ElapsedTime();
-    private boolean automatedShootRunning = false;
-
-    //Servo for release mechanism (gate) currently unused
-    private Servo gateServo;
-
-    double gatePosition = 0; // TODO: Change if need be
     private long CYCLE_MS;
 
     @Override
     public void runOpMode() {
 
         initializeHardware();
+
+        setDesiredTagId(BLUE_DESIRED_TAG_ID);
 
         waitForStart();
         runtime.reset();

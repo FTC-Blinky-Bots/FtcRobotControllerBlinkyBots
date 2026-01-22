@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -86,7 +87,7 @@ import java.util.List;
  */
 
 @TeleOp(name="Basic: Omni Linear OpMode (normal servo) 25-26", group="Linear OpMode")
-//@Disabled
+@Disabled
 public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
@@ -125,7 +126,9 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
     final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
     final double APRIL_BEARING_THRESHOLD = 1;    // Current bearing from april tag is under this threshold distance from desired distance.
     private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
-    private static final int DESIRED_TAG_ID = 24;     // Choose the tag you want to approach or set to -1 for ANY tag. TODO: either make two versions of TeleOp or do something smarter
+    public static final int RED_DESIRED_TAG_ID = 24;   // April tag ID for the red launch goal
+    public static final int BLUE_DESIRED_TAG_ID = 20;     // April tag ID for the blue launch goal
+    private int desiredTagId = 0;                    // Holds the desired tag ID for shooting
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
@@ -243,7 +246,7 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
         int divider = 3;
         // if button LB is pressed, the speed will increase
         boolean buttonLBPressed = gamepad1.left_bumper;  // B gamepad 1
-        if (!buttonLBPressed) {
+        if (buttonLBPressed) {
             leftFrontPower /= divider;
             rightFrontPower /= divider;
             leftBackPower /= divider;
@@ -393,7 +396,7 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
             // Look to see if we have size info on this tag.
             if (detection.metadata != null) {
                 //  Check to see if we want to track towards this tag.
-                if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
+                if ((desiredTagId < 0) || (detection.id == desiredTagId)) {
                     // Yes, we want to use this tag.
                     targetFound = true;
                     desiredTag = detection;
@@ -419,7 +422,7 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
             if (Math.abs(desiredTag.ftcPose.bearing) > APRIL_BEARING_THRESHOLD){
 
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
-                double headingError = desiredTag.ftcPose.bearing;
+                double headingError = -desiredTag.ftcPose.bearing;
 
                 // Use the speed and turn "gains" to calculate how we want the robot to move.
                 turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
@@ -459,6 +462,9 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
                     .addProcessor(aprilTag)
                     .build();
         }
+    }
+    public void setDesiredTagId(int desiredTagId) {
+        this.desiredTagId = desiredTagId;
     }
 }
 
