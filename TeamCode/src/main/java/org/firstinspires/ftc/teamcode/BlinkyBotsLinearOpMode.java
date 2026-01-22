@@ -340,17 +340,17 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
             gatePosition = GATE_DOWN;
             telemetry.addData("Gate", "down");
 
-        } else if (elapsedTime < 4.25) {
+        } else if (elapsedTime < 4) {
             // Step: Send gate up to push ball 2
             gatePosition = GATE_UP;
             telemetry.addData("Gate", "Up");
 
-        } else if (elapsedTime < 4.75) {
+        } else if (elapsedTime < 4.5) {
             //Step: put the gate down
             gatePosition = GATE_DOWN;
             telemetry.addData("Gate", "down");
 
-        } else if (elapsedTime < 5.75) {
+        } else if (elapsedTime < 5.25) {
             // Step: Send gate up to push ball 3
             gatePosition = GATE_UP;
             telemetry.addData("Gate", "Up");
