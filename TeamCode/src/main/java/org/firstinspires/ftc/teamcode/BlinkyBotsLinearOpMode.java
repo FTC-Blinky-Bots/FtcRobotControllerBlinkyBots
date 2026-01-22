@@ -29,11 +29,22 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+import java.util.List;
 
 /*
  * This is a base class meant to be extended by other OpModes
@@ -76,7 +87,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @TeleOp(name="Basic: Omni Linear OpMode (normal servo) 25-26", group="Linear OpMode")
-//@Disabled
+@Disabled
 public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
@@ -110,6 +121,17 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
     static final double GATE_UP = 0.6;
     static final double GATE_DOWN = 0;
     double gatePosition = GATE_DOWN; // TODO: Change if need be
+    // Camera stuff
+    final double TURN_GAIN   =  0.1  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+    final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
+    final double APRIL_BEARING_THRESHOLD = 1;    // Current bearing from april tag is under this threshold distance from desired distance.
+    private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
+    public static final int RED_DESIRED_TAG_ID = 24;   // April tag ID for the red launch goal
+    public static final int BLUE_DESIRED_TAG_ID = 20;     // April tag ID for the blue launch goal
+    private int desiredTagId = 0;                    // Holds the desired tag ID for shooting
+    private VisionPortal visionPortal;               // Used to manage the video source.
+    private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
+    private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
     private long CYCLE_MS = 0;
 
     void addTelemetry() {
@@ -147,13 +169,6 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
         double axial = -gamepad1.left_stick_y;  // Note: pushing stick forward gives negative value
         double lateral = gamepad1.left_stick_x;
         double yaw = gamepad1.right_stick_x;
-
-        // Combine the joystick requests for each axis-motion to determine each wheel's power.
-        // Set up a variable for each drive wheel to save the power level for telemetry.
-        double leftFrontPower = axial + lateral + yaw;
-        double rightFrontPower = axial - lateral - yaw;
-        double leftBackPower = axial - lateral + yaw;
-        double rightBackPower = axial + lateral - yaw;
 
         //gamepad2 - control launch mechanism - right bumper pressed for release
         boolean rightBumperPressed = gamepad2.right_bumper;
@@ -198,14 +213,22 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
 
         //Button pressed for automated shooting
         if (gamepad2.left_trigger > 0.2) {
-            automatedShoot(LAUNCH_POWER_MORE);
+            yaw = automatedShoot(LAUNCH_POWER_MORE);
 
         } else if (gamepad2.right_trigger > 0.2) {
-            automatedShoot(LAUNCH_POWER_LESS);
+            yaw = automatedShoot(LAUNCH_POWER_LESS);
 
         } else {
             endAutomatedShoot();
         }
+
+        // Combine the joystick requests for each axis-motion to determine each wheel's power.
+        // Set up a variable for each drive wheel to save the power level for telemetry.
+        leftFrontPower = axial + lateral + yaw;
+        rightFrontPower = axial - lateral - yaw;
+        leftBackPower = axial - lateral + yaw;
+        rightBackPower = axial + lateral - yaw;
+
 
         // Normalize the values so no wheel power exceeds 100%
         // This ensures that the robot maintains the desired motion.
@@ -223,14 +246,19 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
         int divider = 3;
         // if button LB is pressed, the speed will increase
         boolean buttonLBPressed = gamepad1.left_bumper;  // B gamepad 1
-        if (!buttonLBPressed) {
+        if (buttonLBPressed) {
             leftFrontPower /= divider;
             rightFrontPower /= divider;
             leftBackPower /= divider;
             rightBackPower /= divider;
         }
     }
+
     void initializeHardware() {
+
+        // Initialize the Apriltag Detection process
+        initAprilTag();
+
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
         leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
@@ -270,7 +298,10 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
     }
 
 
-    public void automatedShoot(double targetLaunchPower) {
+    public double automatedShoot(double targetLaunchPower) {
+
+        double turn = 0;
+
         // Track whether we're mid-shoot.  Only reset the timer on first entry
         if (!automatedShootRunning) {
             automatedShootTimer.reset();
@@ -288,8 +319,10 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
             // Set the variable. Main loop will send this power level to motors.
             launchPower = targetLaunchPower;
 
+            turn = rotateToAprilTag();
+
             // Don't send the telemetry yet. Just add lines.
-            telemetry.addData("Step 1","Setting power");
+            telemetry.addData("Step 1", "Setting power");
 
         } else if (elapsedTime < 2.75) {
             // Do this in seconds 2-3
@@ -307,12 +340,12 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
             gatePosition = GATE_DOWN;
             telemetry.addData("Gate", "down");
 
-        } else if (elapsedTime < 3.75) {
+        } else if (elapsedTime < 4) {
             // Step: Send gate up to push ball 2
             gatePosition = GATE_UP;
             telemetry.addData("Gate", "Up");
 
-        } else if (elapsedTime < 4.75) {
+        } else if (elapsedTime < 4.5) {
             //Step: put the gate down
             gatePosition = GATE_DOWN;
             telemetry.addData("Gate", "down");
@@ -325,7 +358,9 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
         }
 
         telemetry.addData("Automated Shoot", "True");
+        return turn;
     }
+
     /*
      * Method to end an automated shoot and reset any motors and servos.
      */
@@ -344,7 +379,93 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
 
         telemetry.addData("Automated Shoot", "False");
     }
+    public double rotateToAprilTag() {
 
+        double  drive           = 0;        // Desired forward power/speed (-1 to +1)
+        double  strafe          = 0;        // Desired strafe power/speed (-1 to +1)
+        double  turn            = 0;        // Desired turning power/speed (-1 to +1)
+        List<AprilTagDetection> currentDetections;
+
+        boolean targetFound = false;    // Set to true when an AprilTag target is detected
+
+        desiredTag  = null;
+
+        // Step through the list of detected tags and look for a matching tag
+        currentDetections = aprilTag.getDetections();
+        for (AprilTagDetection detection : currentDetections) {
+            // Look to see if we have size info on this tag.
+            if (detection.metadata != null) {
+                //  Check to see if we want to track towards this tag.
+                if ((desiredTagId < 0) || (detection.id == desiredTagId)) {
+                    // Yes, we want to use this tag.
+                    targetFound = true;
+                    desiredTag = detection;
+                } else {
+                    // This tag is in the library, but we do not want to track it right now.
+                    telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
+                }
+            } else {
+                // This tag is NOT in the library, so we don't have enough information to track to it.
+                telemetry.addData("Unknown", "Tag ID %d is not in TagLibrary", detection.id);
+            }
+        }
+
+
+        // Tell the driver what we see, and what to do.
+        if (targetFound) {
+            telemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
+            telemetry.addData("Range",  "%5.1f inches", desiredTag.ftcPose.range);
+            telemetry.addData("Bearing","%3.0f degrees", desiredTag.ftcPose.bearing);
+            telemetry.addData("Yaw","%3.0f degrees", desiredTag.ftcPose.yaw);
+
+            // absolute value of (distance from april tag - desiredDistance) is more than 0.5 inch.
+            if (Math.abs(desiredTag.ftcPose.bearing) > APRIL_BEARING_THRESHOLD){
+
+                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+                double headingError = -desiredTag.ftcPose.bearing;
+
+                // Use the speed and turn "gains" to calculate how we want the robot to move.
+                turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+
+                telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+            }
+
+        } else {
+            // Error case. Could not find an April Tag.
+            telemetry.addData("\n>","NO TARGET FOUND\n");
+            telemetry.update();
+        }
+        return turn;
     }
+    private void initAprilTag() {
+        // Create the AprilTag processor by using a builder.
+        aprilTag = new AprilTagProcessor.Builder().build();
+
+        // Adjust Image Decimation to trade-off detection-range for detection-rate.
+        // e.g. Some typical detection data using a Logitech C920 WebCam
+        // Decimation = 1 ..  Detect 2" Tag from 10 feet away at 10 Frames per second
+        // Decimation = 2 ..  Detect 2" Tag from 6  feet away at 22 Frames per second
+        // Decimation = 3 ..  Detect 2" Tag from 4  feet away at 30 Frames Per Second
+        // Decimation = 3 ..  Detect 5" Tag from 10 feet away at 30 Frames Per Second
+        // Note: Decimation can be changed on-the-fly to adapt during a match.
+        aprilTag.setDecimation(2);
+
+        // Create the vision portal by using a builder.
+        if (USE_WEBCAM) {
+            visionPortal = new VisionPortal.Builder()
+                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                    .addProcessor(aprilTag)
+                    .build();
+        } else {
+            visionPortal = new VisionPortal.Builder()
+                    .setCamera(BuiltinCameraDirection.BACK)
+                    .addProcessor(aprilTag)
+                    .build();
+        }
+    }
+    public void setDesiredTagId(int desiredTagId) {
+        this.desiredTagId = desiredTagId;
+    }
+}
 
 

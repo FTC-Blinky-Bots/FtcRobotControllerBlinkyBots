@@ -28,16 +28,9 @@
  */
 
 package org.firstinspires.ftc.teamcode;
-import org.firstinspires.ftc.teamcode.BlinkyBotsLinearOpMode;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 /*
  * TODO: gyro driving for hard turn 180
@@ -76,42 +69,19 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * Roadrunner odometry pods (3?)
  */
 
-@TeleOp(name="Basic: Omni Linear OpMode (normal servo) 25-26", group="Linear OpMode")
+@TeleOp(name="BLUE TeleOp 25-26", group="Linear OpMode")
 //@Disabled
-public class BasicOmniOpMode_Linear_BB_25_26 extends BlinkyBotsLinearOpMode {
-
+public class BasicOmniOpMode_Linear_BB_BLUE extends BlinkyBotsLinearOpMode {
     // Declare OpMode members for each of the 4 motors.
     private final ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftFrontDrive = null;
-    private DcMotor leftBackDrive = null;
-    private DcMotor rightFrontDrive = null;
-    private DcMotor rightBackDrive = null;
-
-    // Declare OpMode members for the launch motors
-    private DcMotorEx rightLaunchDrive = null;
-    private DcMotorEx leftLaunchDrive = null;
-
-    // Set constant power level for the launch motors
-    static final double LAUNCH_POWER_LESS = 0.5; //TODO: Tune value (between 0 and 1)
-    static final double LAUNCH_POWER_MORE = 0.57;
-    // Set up a variable for each launch wheel to set power level
-    private double launchPower = 0;
-
-    private double launchTrim = 0; // TODO: This is buggy - always runs
-
-    private final ElapsedTime automatedShootTimer = new ElapsedTime();
-    private boolean automatedShootRunning = false;
-
-    //Servo for release mechanism (gate) currently unused
-    private Servo gateServo;
-
-    double gatePosition = 0; // TODO: Change if need be
     private long CYCLE_MS;
 
     @Override
     public void runOpMode() {
 
         initializeHardware();
+
+        setDesiredTagId(BLUE_DESIRED_TAG_ID);
 
         waitForStart();
         runtime.reset();
@@ -133,81 +103,6 @@ public class BasicOmniOpMode_Linear_BB_25_26 extends BlinkyBotsLinearOpMode {
         telemetry.addData(">", "Done");
         telemetry.update();
     }
-    public void automatedShoot(double targetLaunchPower) {
-        // Track whether we're mid-shoot.  Only reset the timer on first entry
-        if (!automatedShootRunning) {
-            automatedShootTimer.reset();
-            automatedShootRunning = true;
-        }
-
-        // Save the timer value so we don't keep re-reading the timer.
-        // Re-reading the timer on every 'if' evaluation would introduce time gaps.
-        double elapsedTime = automatedShootTimer.seconds();
-        telemetry.addData("Elapsed Time", "%4.2f", elapsedTime);
-        if (elapsedTime < 2.0) {
-            // First 2 seconds
-
-            // Step: Launch wheels rolling and wait for wheel momentum
-            // Set the variable. Main loop will send this power level to motors.
-            launchPower = targetLaunchPower;
-
-            // Don't send the telemetry yet. Just add lines.
-            telemetry.addData("Step 1","Setting power");
-
-        } else if (elapsedTime < 2.75) {
-            // Do this in seconds 2-3
-
-            // Step: Send gate up to push ball 1
-            gatePosition = GATE_UP;
-
-            // Don't send the telemetry yet. Just add lines.
-            telemetry.addData("Step 2 Gate", "Up");
-
-        } else if (elapsedTime < 3.25) {
-            // Do this in seconds 3.0 - 3.5
-
-            //Step: put the gate down
-            gatePosition = GATE_DOWN;
-            telemetry.addData("Gate", "down");
-
-        } else if (elapsedTime < 3.75) {
-            // Step: Send gate up to push ball 2
-            gatePosition = GATE_UP;
-            telemetry.addData("Gate", "Up");
-
-        } else if (elapsedTime < 4.75) {
-            //Step: put the gate down
-            gatePosition = GATE_DOWN;
-            telemetry.addData("Gate", "down");
-
-        } else if (elapsedTime < 5.25) {
-            // Step: Send gate up to push ball 3
-            gatePosition = GATE_UP;
-            telemetry.addData("Gate", "Up");
-
-        }
-
-        telemetry.addData("Automated Shoot", "True");
-    }
-    /*
-     * Method to end an automated shoot and reset any motors and servos.
-     */
-    public void endAutomatedShoot() {
-        telemetry.addData("Starting Automated Shoot", "False");
-
-        if (automatedShootRunning) {
-            automatedShootRunning = false;
-
-            // Put the gate down
-            gatePosition = GATE_DOWN;
-
-            // Turn off launch motors
-            launchPower = 0;
-        }
-
-        telemetry.addData("Automated Shoot", "False");
-    }
-
-    }
+}
 
 
