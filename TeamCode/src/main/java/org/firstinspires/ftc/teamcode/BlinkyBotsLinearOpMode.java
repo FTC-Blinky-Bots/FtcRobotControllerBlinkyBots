@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -86,6 +87,25 @@ import java.util.List;
  * Roadrunner odometry pods (3?)
  */
 
+/*
+ * TODO: Shoot-By-Velo
+ *
+ * - Switch to DcMotorEx.  Initialize runmode.
+ *
+ * - Add a Test op mode to get PIDF values
+ *   https://docs.google.com/document/d/1tyWrXDfMidwYyP_5H4mZyVgaEswhOC35gvdmP-V-5hA/edit?tab=t.0#heading=h.k1p1szg5soey
+ *
+ * - Add a shooting mode variable (power? velo? hybrid?)
+ *
+ * - Add option to DRIVE_BY_ENCODER if in velo or hybrid mode
+ *
+ * - modify autoshoot
+ *      - drive by velo for target velo
+ *      - get the power level
+ *      - switch to drive by power
+ * -
+ */
+
 @TeleOp(name="Basic: Omni Linear OpMode (normal servo) 25-26", group="Linear OpMode")
 @Disabled
 public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
@@ -98,8 +118,8 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
     private DcMotor rightBackDrive = null;
 
     // Declare OpMode members for the launch motors
-    private DcMotor rightLaunchDrive = null;
-    private DcMotor leftLaunchDrive = null;
+    private DcMotorEx rightLaunchDrive = null;
+    private DcMotorEx leftLaunchDrive = null;
 
     // Set constant power level for the launch motors
     static final double LAUNCH_POWER_LESS = 0.6; //TODO: Tune value (between 0 and 1)
@@ -118,7 +138,7 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
 
     // Servo for release mechanism 
     private Servo gateServo;
-    static final double GATE_UP = 0.6;
+    static final double GATE_UP = 0.4; // 0.4 is at 90
     static final double GATE_DOWN = 0;
     double gatePosition = GATE_DOWN; // TODO: Change if need be
     // Camera stuff
