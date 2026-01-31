@@ -413,12 +413,11 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
     }
     public double rotateToAprilTag() {
 
+        boolean targetFound     = false;    // Set to true when an AprilTag target is detected
         double  drive           = 0;        // Desired forward power/speed (-1 to +1)
         double  strafe          = 0;        // Desired strafe power/speed (-1 to +1)
         double  turn            = 0;        // Desired turning power/speed (-1 to +1)
         List<AprilTagDetection> currentDetections;
-
-        boolean targetFound = false;    // Set to true when an AprilTag target is detected
 
         desiredTag  = null;
 

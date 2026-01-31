@@ -63,7 +63,7 @@ import java.util.List;
  */
 
 @Autonomous(name="Goal Shooting Red", group="Robot")
-public class RobotAutoDriveByTime_Red extends LinearOpMode {
+public class RobotAutoDriveByTime_Red extends BlinkyBotsLinearOpMode {
 
     /* Declare OpMode members. */
     private DcMotor leftFrontDrive = null;
