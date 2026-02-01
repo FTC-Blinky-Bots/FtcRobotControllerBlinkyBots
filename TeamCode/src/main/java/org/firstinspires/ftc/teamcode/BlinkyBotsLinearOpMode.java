@@ -112,26 +112,28 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
 
     // Declare OpMode members for each of the 4 motors.
     private final ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftFrontDrive = null;
-    private DcMotor leftBackDrive = null;
-    private DcMotor rightFrontDrive = null;
-    private DcMotor rightBackDrive = null;
+    public DcMotor leftFrontDrive = null;
+    public DcMotor leftBackDrive = null;
+    public DcMotor rightFrontDrive = null;
+    public DcMotor rightBackDrive = null;
 
     // Declare OpMode members for the launch motors
-    private DcMotorEx rightLaunchDrive = null;
-    private DcMotorEx leftLaunchDrive = null;
+    public DcMotorEx rightLaunchDrive = null;
+    public DcMotorEx leftLaunchDrive = null;
 
     // Set constant power level for the launch motors
-    static final double LAUNCH_POWER_LESS = 0.6; //TODO: Tune value (between 0 and 1)
-    static final double LAUNCH_POWER_MORE = 0.65;
+    // 13.8 V: .56 and .5
+    // 12.3 V: .6 and .55
+    static final double LAUNCH_POWER_LESS = 0.5; //TODO: Tune value (between 0 and 1)
+    static final double LAUNCH_POWER_MORE = 0.56;
     // Set up a variable for each launch wheel to set power level
     private double launchPower = 0;
     private double launchTrim = 0; // TODO: This is buggy - always runs
 
-    private double leftFrontPower = 0;
-    private double rightFrontPower = 0;
-    private double leftBackPower = 0;
-    private double rightBackPower = 0;
+    public double leftFrontPower = 0;
+    public double rightFrontPower = 0;
+    public double leftBackPower = 0;
+    public double rightBackPower = 0;
 
     private final ElapsedTime automatedShootTimer = new ElapsedTime();
     private boolean automatedShootRunning = false;
