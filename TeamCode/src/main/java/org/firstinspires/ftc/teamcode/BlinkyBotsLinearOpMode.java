@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -86,6 +87,25 @@ import java.util.List;
  * Roadrunner odometry pods (3?)
  */
 
+/*
+ * TODO: Shoot-By-Velo
+ *
+ * - Switch to DcMotorEx.  Initialize runmode.
+ *
+ * - Add a Test op mode to get PIDF values
+ *   https://docs.google.com/document/d/1tyWrXDfMidwYyP_5H4mZyVgaEswhOC35gvdmP-V-5hA/edit?tab=t.0#heading=h.k1p1szg5soey
+ *
+ * - Add a shooting mode variable (power? velo? hybrid?)
+ *
+ * - Add option to DRIVE_BY_ENCODER if in velo or hybrid mode
+ *
+ * - modify autoshoot
+ *      - drive by velo for target velo
+ *      - get the power level
+ *      - switch to drive by power
+ * -
+ */
+
 @TeleOp(name="Basic: Omni Linear OpMode (normal servo) 25-26", group="Linear OpMode")
 @Disabled
 public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
@@ -98,8 +118,8 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
     private DcMotor rightBackDrive = null;
 
     // Declare OpMode members for the launch motors
-    private DcMotor rightLaunchDrive = null;
-    private DcMotor leftLaunchDrive = null;
+    private DcMotorEx rightLaunchDrive = null;
+    private DcMotorEx leftLaunchDrive = null;
 
     // Set constant power level for the launch motors
     static final double LAUNCH_POWER_LESS = 0.6; //TODO: Tune value (between 0 and 1)
@@ -118,7 +138,7 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
 
     // Servo for release mechanism 
     private Servo gateServo;
-    static final double GATE_UP = 0.6;
+    static final double GATE_UP = 0.4; // 0.4 is at 90
     static final double GATE_DOWN = 0;
     double gatePosition = GATE_DOWN; // TODO: Change if need be
     // Camera stuff
@@ -244,13 +264,25 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
         }
 
         int divider = 3;
+        double divider2 = 1.5;
+
         // if button LB is pressed, the speed will increase
         boolean buttonLBPressed = gamepad1.left_bumper;  // B gamepad 1
+        boolean buttonLTPressed = gamepad2.left_trigger > 0.1;
+        boolean buttonRTPressed = gamepad2.right_trigger > 0.1;
+
         if (buttonLBPressed) {
             leftFrontPower /= divider;
             rightFrontPower /= divider;
             leftBackPower /= divider;
             rightBackPower /= divider;
+        }
+
+        if (buttonLTPressed || buttonRTPressed) {
+            leftFrontPower /= divider2;
+            rightFrontPower /= divider2;
+            leftBackPower /= divider2;
+            rightBackPower /= divider2;
         }
     }
 
@@ -267,8 +299,8 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
         rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
 
         //Add config for new motors (launch wheels)
-        rightLaunchDrive = hardwareMap.get(DcMotor.class, "right_launch_drive"); // Port 0
-        leftLaunchDrive = hardwareMap.get(DcMotor.class, "left_launch_drive");
+        rightLaunchDrive = hardwareMap.get(DcMotorEx.class, "right_launch_drive"); // Port 0
+        leftLaunchDrive = hardwareMap.get(DcMotorEx.class, "left_launch_drive");
 
         // Connect to servo
         gateServo = hardwareMap.get(Servo.class, "gate_servo");
@@ -324,7 +356,7 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
             // Don't send the telemetry yet. Just add lines.
             telemetry.addData("Step 1", "Setting power");
 
-        } else if (elapsedTime < 2.75) {
+        } else if (elapsedTime < 2.25) {
             // Do this in seconds 2-3
 
             // Step: Send gate up to push ball 1
@@ -340,7 +372,7 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
             gatePosition = GATE_DOWN;
             telemetry.addData("Gate", "down");
 
-        } else if (elapsedTime < 4) {
+        } else if (elapsedTime < 3.5) {
             // Step: Send gate up to push ball 2
             gatePosition = GATE_UP;
             telemetry.addData("Gate", "Up");
@@ -350,7 +382,7 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
             gatePosition = GATE_DOWN;
             telemetry.addData("Gate", "down");
 
-        } else if (elapsedTime < 5.25) {
+        } else if (elapsedTime < 5.0) {
             // Step: Send gate up to push ball 3
             gatePosition = GATE_UP;
             telemetry.addData("Gate", "Up");

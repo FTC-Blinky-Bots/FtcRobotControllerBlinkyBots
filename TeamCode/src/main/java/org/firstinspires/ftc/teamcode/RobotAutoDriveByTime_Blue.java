@@ -385,7 +385,7 @@ public class RobotAutoDriveByTime_Blue extends LinearOpMode {
         //Find April Tag
         rotateToAprilTag();
 
-        //Step: Launch wheels rolling
+        //Step: Launch wheels rolling TODO: Make timings match OpModeLinear
         leftLaunchDrive.setPower(LAUNCH_SPEED);
         rightLaunchDrive.setPower(LAUNCH_SPEED);
         telemetry.addData("Step", "2");
