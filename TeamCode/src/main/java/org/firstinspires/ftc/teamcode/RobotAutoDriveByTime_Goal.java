@@ -449,9 +449,6 @@ public class RobotAutoDriveByTime_Goal extends LinearOpMode {
         telemetry.addData("Gate", "down");
         telemetry.update();
 
-        //Step: back up
-        driveByTime(-0.6, 0,0,1,0);
-
         // Step: Park and wait for TeleOp
         // TODO
 
