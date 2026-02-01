@@ -31,22 +31,12 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-
-import java.util.List;
 
 /*
  * This OpMode illustrates the concept of driving a path based on time.
@@ -62,8 +52,8 @@ import java.util.List;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Far Red Goal", group="Robot")
-public class RobotAutoDriveByTime_Red extends BlinkyBotsLinearOpMode {
+@Autonomous(name="Short Red Goal", group="Robot")
+public class RobotAutoDriveByTime_Short_Red extends BlinkyBotsLinearOpMode {
     private IMU imu         = null;      // Control/Expansion Hub IMU
 
     // These variable are declared here (as class members) so they can be updated in various methods,
@@ -149,8 +139,8 @@ public class RobotAutoDriveByTime_Red extends BlinkyBotsLinearOpMode {
         // Wait for the game to start (driver presses START)
         waitForStart();
 
-        //Step: Wait for other team shooting
-        sleep(10000);
+        // Back up
+        driveByTime(-0.6, 0,0,1,0);
 
         //Runs the automated shooting sequence
         runtime.reset();
@@ -158,7 +148,7 @@ public class RobotAutoDriveByTime_Red extends BlinkyBotsLinearOpMode {
             double max;
             double axial = 0;
             double lateral = 0;
-            double yaw = automatedShoot(LAUNCH_POWER_MORE);
+            double yaw = automatedShoot(LAUNCH_POWER_LESS);
 
             leftFrontPower = axial + lateral + yaw;
             rightFrontPower = axial - lateral - yaw;
@@ -196,11 +186,8 @@ public class RobotAutoDriveByTime_Red extends BlinkyBotsLinearOpMode {
         sendMotorValues();
         addTelemetry();
 
-        //Step: back up
-        driveByTime(-0.3, 0,0,1,0);
-
-        //Step: drive forward
-        driveByTime(0.6,0,0,1,0);
+        // Strafe right
+        driveByTime(0,0.6,0,0.7,0);
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
