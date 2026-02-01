@@ -382,73 +382,24 @@ public class RobotAutoDriveByTime_Red extends BlinkyBotsLinearOpMode {
         //Step: Wait for other team shooting
         sleep(10000);
 
-        //Find April Tag
-        rotateToAprilTag();
+        //Runs the automated shooting sequence
+        runtime.reset();
+        while (opModeIsActive() && (runtime.seconds() < 6)) {
+            automatedShoot(LAUNCH_POWER_MORE);
 
-        //Step: Launch wheels rolling
-        leftLaunchDrive.setPower(LAUNCH_SPEED);
-        rightLaunchDrive.setPower(LAUNCH_SPEED);
-        telemetry.addData("Step", "2");
-        telemetry.update();
+            sendMotorValues();
 
-        //Step: Wait for wheel momentum
-        sleep(2000);
-        telemetry.addData("Step","3");
-        telemetry.update();
+            addTelemetry();
 
-        //Step: Servo push the ball up 1
-        gateServo.setPosition(GATE_UP);
-        telemetry.addData("Step", "4");
-        telemetry.update();
-
-        //Step: sleep
-        sleep(1000);
-
-        //Step: put the gate down
-        gateServo.setPosition(GATE_DOWN);
-        telemetry.addData("Gate", "down");
-        telemetry.update();
-
-        //Step: Pause
-        sleep(750);
-
-        //Step: Servo push ball 2
-        gateServo.setPosition(GATE_UP);
-        telemetry.addData("Gate", "Up");
-        telemetry.update();
-
-        //Step: sleep
-        sleep(1000);
-
-        //Step: put the gate down
-        gateServo.setPosition(GATE_DOWN);
-        telemetry.addData("Gate", "down");
-        telemetry.update();
-
-        //Step: Pause
-        sleep(750);
-
-        //Step: Servo push ball 3
-        gateServo.setPosition(GATE_UP);
-        telemetry.addData("Gate", "Up");
-        telemetry.update();
-
-        //Step: sleep
-        sleep(1000);
-
-        //Step: put the gate down
-        gateServo.setPosition(GATE_DOWN);
-        telemetry.addData("Gate", "down");
-        telemetry.update();
+            //sleep(CYCLE_MS);
+            idle();
+        }
 
         //Step: back up
         driveByTime(-0.3, 0,0,1,0);
 
         //Step: drive forward
         driveByTime(0.6,0,0,1,0);
-
-        // Step: Park and wait for TeleOp
-        // TODO
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
@@ -671,7 +622,7 @@ public class RobotAutoDriveByTime_Red extends BlinkyBotsLinearOpMode {
         telemetry.addData("Threshold :",  "%5.1f", HEADING_THRESHOLD);
         telemetry.update();
     }
-    public void rotateToAprilTag() {
+    public void autoRotateToAprilTag() {
 
         boolean targetFound     = false;    // Set to true when an AprilTag target is detected
         double  drive           = 0;        // Desired forward power/speed (-1 to +1)
