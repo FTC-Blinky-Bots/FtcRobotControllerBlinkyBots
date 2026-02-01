@@ -452,7 +452,7 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
             telemetry.addData("Yaw","%3.0f degrees", desiredTag.ftcPose.yaw);
 
             // absolute value of (distance from april tag - desiredDistance) is more than 0.5 inch.
-            if (Math.abs(desiredTag.ftcPose.bearing) > APRIL_BEARING_THRESHOLD){
+            if ( (desiredTagId == RED_DESIRED_TAG_ID) && (Math.abs(desiredTag.ftcPose.bearing) > APRIL_BEARING_THRESHOLD) ){
 
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
                 double headingError = -desiredTag.ftcPose.bearing;
@@ -461,7 +461,18 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
                 turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
 
                 telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+            }else if ( (desiredTagId == BLUE_DESIRED_TAG_ID) && (Math.abs(desiredTag.ftcPose.bearing - 5) > APRIL_BEARING_THRESHOLD) ){
+
+                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+                double headingError = -desiredTag.ftcPose.bearing - 5;
+
+                // Use the speed and turn "gains" to calculate how we want the robot to move.
+                turn = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+
+                telemetry.addData("Auto", "Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
             }
+
+
 
         } else {
             // Error case. Could not find an April Tag.
