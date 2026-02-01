@@ -189,12 +189,12 @@ public class RobotAutoDriveByTime_Red extends BlinkyBotsLinearOpMode {
 
             addTelemetry();
 
-            //sleep(CYCLE_MS);
+            sleep(CYCLE_MS);
             idle();
         }
         endAutomatedShoot();
-
         sendMotorValues();
+        addTelemetry();
 
         //Step: back up
         driveByTime(-0.3, 0,0,1,0);

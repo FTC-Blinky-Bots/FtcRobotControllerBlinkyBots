@@ -154,7 +154,7 @@ public abstract class BlinkyBotsLinearOpMode extends LinearOpMode {
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
-    private long CYCLE_MS = 0;
+    public long CYCLE_MS = 0;
 
     void addTelemetry() {
         // Show the elapsed game time and wheel power.
